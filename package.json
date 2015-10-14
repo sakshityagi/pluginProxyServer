@@ -1,0 +1,27 @@
+{
+  "name": "plugin-proxy-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sakshityagi/pluginProxyServer.git"
+  },
+  "author": "Sakshi Tyagi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sakshityagi/pluginProxyServer/issues"
+  },
+  "homepage": "https://github.com/sakshityagi/pluginProxyServer#readme",
+  "dependencies": {
+    "async": "^1.4.2",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "feedparser": "^1.1.3",
+    "ical2json": "^0.2.0",
+    "request": "^2.65.0"
+  }
+}
