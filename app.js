@@ -39,6 +39,10 @@ app.get('/', function (req, res) {
 });
 
 
+/*
+*  Events Feed Backend starts here
+*/
+
 // API to validate ical url
 app.post('/validate', function (req, res) {
   if (req.body.url) {
@@ -86,19 +90,20 @@ app.post('/events', function (req, res) {
         if (!error && response.statusCode == 200) {
           var data = ical2json.convert(body);
           if (data && data.VEVENT && data.VEVENT.length) {
-            processData(data.VEVENT, function (events) {
-              data.VEVENT = events;
-              data.VEVENT = data.VEVENT.sort(function (a, b) {
+            var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
+            processData(mergedEvents, function (events) {
+              mergedEvents = events;
+              mergedEvents = mergedEvents.sort(function (a, b) {
                 return a.startDate - b.startDate;
               });
-              EVENTS_DATA[req.body.url] = data.VEVENT;
-              returnEventIndexFromCurrentDate(data.VEVENT,req.body.date, function (index) {
+              EVENTS_DATA[req.body.url] = mergedEvents;
+              returnEventIndexFromCurrentDate(mergedEvents,req.body.date, function (index) {
                 if (index != -1) {
-                  paginatedListOfEvents = data.VEVENT.slice(offset + index, (offset + index + limit));
+                  paginatedListOfEvents = mergedEvents.slice(offset + index, (offset + index + limit));
                   res.send({
                     'statusCode': 200,
                     'events': paginatedListOfEvents,
-                    'totalEvents': data.VEVENT.length - index
+                    'totalEvents': mergedEvents.length - index
                   });
                 } else {
                   res.send({
@@ -140,15 +145,16 @@ app.post('/event', function (req, res) {
         if (!error && response.statusCode == 200) {
           var data = ical2json.convert(body);
           if (data && data.VEVENT && data.VEVENT.length) {
-            processData(data.VEVENT, function (events) {
-              data.VEVENT = events;
-              data.VEVENT = data.VEVENT.sort(function (a, b) {
+            var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
+            processData(mergedEvents, function (events) {
+              mergedEvents = events;
+              mergedEvents = mergedEvents.sort(function (a, b) {
                 return a.startDate - b.startDate;
               });
-              EVENTS_DATA[req.body.url] = data.VEVENT;
-              returnEventIndexFromCurrentDate(data.VEVENT,req.body.date, function (indexOfCurrentDateEvent) {
+              EVENTS_DATA[req.body.url] = mergedEvents;
+              returnEventIndexFromCurrentDate(mergedEvents,req.body.date, function (indexOfCurrentDateEvent) {
                 if (index != -1) {
-                  var event = data.VEVENT[Number(index) + indexOfCurrentDateEvent];
+                  var event = mergedEvents[Number(index) + indexOfCurrentDateEvent];
                   res.send({'statusCode': 200, 'event': event});
                 } else {
                   res.send({'statusCode': 404, 'event': null});
@@ -166,7 +172,45 @@ app.post('/event', function (req, res) {
     res.send({'statusCode': 404, 'event': null});
 });
 
-/* API to validate rss feed url*/
+
+function processData(events, callback) {
+  async.each(events, function (event, cb) {
+    event = dateParser(event);
+    cb();
+  }, function () {
+    callback(events);
+  });
+}
+
+// Method to get index from which the events from current date onwards start
+
+function returnEventIndexFromCurrentDate(events, date, callback) {
+  var currentDate = date || +new Date(),
+    eventIndex = -1;
+  async.forEachOf(events, function (event, index, cb) {
+    if (event.startDate >= currentDate) {
+      eventIndex = index;
+      cb("error");
+    } else cb();
+  }, function () {
+    callback(eventIndex);
+  });
+}
+
+/*
+ *  Events Feed Backend ends here
+ */
+
+/**
+ ***************************************************************
+****************************************************************
+ **/
+
+/*
+ *  Media Center RSS Backend starts here
+ */
+
+// API to validate rss feed url
 app.post('/validatefeedurl', function (req, res) {
   var isValidFeedUrl = false;
   if (!req.body.feedUrl) {
@@ -198,7 +242,7 @@ app.post('/validatefeedurl', function (req, res) {
   }
 });
 
-/* API to parse and send xml in response*/
+// API to parse and send xml in response
 app.post('/parsefeedurl', function (req, res) {
 
   if (!req.body.feedUrl) {
@@ -246,36 +290,16 @@ app.post('/parsefeedurl', function (req, res) {
 
 });
 
+/*
+ *  Media Center RSS Backend ends here
+ */
+
 var server = app.listen(process.env.PORT || 3020, function () {
   var host = server.address().address;
   var port = server.address().port;
 
   console.log('Server app listening at http://%s:%s', host, port);
 });
-
-function processData(events, callback) {
-  async.each(events, function (event, cb) {
-    event = dateParser(event);
-    cb();
-  }, function () {
-    callback(events);
-  });
-}
-
-// Method to get index from which the events from current date onwards start
-
-function returnEventIndexFromCurrentDate(events, date, callback) {
-  var currentDate = date || +new Date(),
-    eventIndex = -1;
-  async.forEachOf(events, function (event, index, cb) {
-    if (event.startDate >= currentDate) {
-      eventIndex = index;
-      cb("error");
-    } else cb();
-  }, function () {
-    callback(eventIndex);
-  });
-}
 
 
 module.exports = function () {
