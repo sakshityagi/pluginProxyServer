@@ -324,6 +324,7 @@ app.post('/parsefeedurl', function (req, res) {
  *  Youtube Backend starts here
  */
 
+// API to fetch a single video details for a given video id
 app.post('/video', function (req, res) {
   if (req.body.id) {
     var _url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + req.body.id + '&key=' + YOUTUBE_API_KEY;
@@ -332,6 +333,28 @@ app.post('/video', function (req, res) {
         body = JSON.parse(body);
         if (body.items && body.items.length) {
           res.send({'statusCode': 200, 'video': body.items[0]});
+        }
+      } else
+        res.send({'statusCode': 500});
+    });
+  } else
+    res.send({'statusCode': 404});
+});
+
+
+//APi to fetch a paginated list of videos for a given playlist id
+app.post('/videos', function (req, res) {
+  if (req.body.playlistId) {
+    var _url = "";
+    if (req.body.pageToken)
+      _url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=" + req.body.countLimit + "&pageToken=" + req.body.pageToken + "&playlistId=" + req.body.playlistId + "&key=" + YOUTUBE_API_KEY;
+    else
+      _url = "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=" + req.body.countLimit + "&playlistId=" + req.body.playlistId + "&key=" + YOUTUBE_API_KEY;
+    request(_url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        body = JSON.parse(body);
+        if (body.items && body.items.length) {
+          res.send({'statusCode': 200, 'videos': body});
         }
       } else
         res.send({'statusCode': 500});
