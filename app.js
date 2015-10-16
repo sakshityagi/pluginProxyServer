@@ -6,6 +6,8 @@ var EVENTS_DATA = {};
 //Declare a global variable to save the time when events were cached last time. Refresh events after one day.
 var Last_EVENT_SYNC_TIME = +new Date();
 
+var YOUTUBE_API_KEY = "AIzaSyC5d5acYzAtC9fiDcCOvvpA-xX9dKwkmAA";
+
 
 var express = require('express');
 var app = express(),
@@ -73,7 +75,7 @@ app.post('/events', function (req, res) {
   var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60 * 24));
   var paginatedListOfEvents = [];
 
-  if(isSyncThresholdCrossed) {
+  if (isSyncThresholdCrossed) {
     Last_EVENT_SYNC_TIME = currentTime;
   }
 
@@ -143,7 +145,7 @@ app.post('/event', function (req, res) {
   var index = req.body.index || 0;
   var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60 * 24));
 
-  if(isSyncThresholdCrossed) {
+  if (isSyncThresholdCrossed) {
     Last_EVENT_SYNC_TIME = currentTime;
   }
 
@@ -311,6 +313,37 @@ app.post('/parsefeedurl', function (req, res) {
 /*
  *  Media Center RSS Backend ends here
  */
+
+
+/**
+ ***************************************************************
+ ****************************************************************
+ **/
+
+/*
+ *  Youtube Backend starts here
+ */
+
+app.post('/video', function (req, res) {
+  if (req.body.id) {
+    var _url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + req.body.id + '&key=' + YOUTUBE_API_KEY;
+    request(_url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        body = JSON.parse(body);
+        if (body.items && body.items.length) {
+          res.send({'statusCode': 200, 'video': body.items[0]});
+        }
+      } else
+        res.send({'statusCode': 500});
+    });
+  } else
+    res.send({'statusCode': 404});
+});
+
+/*
+ *  Youtube Backend ends here
+ */
+
 
 var server = app.listen(process.env.PORT || 3020, function () {
   var host = server.address().address;
