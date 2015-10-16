@@ -335,10 +335,10 @@ app.post('/video', function (req, res) {
           res.send({'statusCode': 200, 'video': body.items[0]});
         }
       } else
-        res.send({'statusCode': 500});
+        res.send({'statusCode': 500,'video': null});
     });
   } else
-    res.send({'statusCode': 404});
+    res.send({'statusCode': 404,'video': null});
 });
 
 
@@ -357,10 +357,10 @@ app.post('/videos', function (req, res) {
           res.send({'statusCode': 200, 'videos': body});
         }
       } else
-        res.send({'statusCode': 500});
+        res.send({'statusCode': 500,'videos': null});
     });
   } else
-    res.send({'statusCode': 404});
+    res.send({'statusCode': 404,'videos': null});
 });
 
 /*
