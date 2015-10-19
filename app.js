@@ -161,32 +161,7 @@ app.post('/event', function (req, res) {
       });
     }
     else {
-      request(req.body.url, function (error, response, body) {
-        if (!error && response.statusCode == 200) {
-          var data = ical2json.convert(body);
-          if (data && data.VEVENT && data.VEVENT.length) {
-            var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
-            processData(mergedEvents, function (events) {
-              mergedEvents = events;
-              mergedEvents = mergedEvents.sort(function (a, b) {
-                return a.startDate - b.startDate;
-              });
-              EVENTS_DATA[req.body.url] = mergedEvents;
-              returnEventIndexFromCurrentDate(mergedEvents, req.body.date, function (indexOfCurrentDateEvent) {
-                if (index != -1) {
-                  var event = mergedEvents[Number(index) + indexOfCurrentDateEvent];
-                  res.send({'statusCode': 200, 'event': event});
-                } else {
-                  res.send({'statusCode': 404, 'event': null});
-                }
-              });
-            });
-          }
-          else
-            res.send({'statusCode': 404, 'event': null});
-        } else
-          res.send({'statusCode': 500, 'event': null});
-      });
+      res.send({'statusCode': 500, 'event': null});
     }
   } else
     res.send({'statusCode': 404, 'event': null});
