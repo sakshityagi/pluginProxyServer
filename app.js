@@ -310,10 +310,10 @@ app.post('/video', function (req, res) {
           res.send({'statusCode': 200, 'video': body.items[0]});
         }
       } else
-        res.send({'statusCode': 500,'video': null});
+        res.send({'statusCode': 500, 'video': null});
     });
   } else
-    res.send({'statusCode': 404,'video': null});
+    res.send({'statusCode': 404, 'video': null});
 });
 
 
@@ -332,15 +332,35 @@ app.post('/videos', function (req, res) {
           res.send({'statusCode': 200, 'videos': body});
         }
       } else
-        res.send({'statusCode': 500,'videos': null});
+        res.send({'statusCode': 500, 'videos': null});
     });
   } else
-    res.send({'statusCode': 404,'videos': null});
+    res.send({'statusCode': 404, 'videos': null});
 });
 
 /*
  *  Youtube Backend ends here
  */
+
+
+/**
+ ***************************************************************
+ ****************************************************************
+ **/
+
+/*
+ *  Health check API
+ */
+
+app.get('/healthCheck', function (req, res) {
+  var _url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=LtRs5XD93T0&key=' + YOUTUBE_API_KEY;
+  request(_url, function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      res.status(200).send("Working");
+    } else
+      res.status(500).send("Something wrong");
+  });
+});
 
 
 var server = app.listen(process.env.PORT || 3020, function () {
