@@ -3,7 +3,7 @@
 //Declare a global data object for caching events
 var EVENTS_DATA = {};
 
-//Declare a global variable to save the time when events were cached last time. Refresh events after one day.
+//Declare a global variable to save the time when events were cached last time.
 var Last_EVENT_SYNC_TIME = +new Date();
 
 var YOUTUBE_API_KEY = "AIzaSyC5d5acYzAtC9fiDcCOvvpA-xX9dKwkmAA";
@@ -72,7 +72,8 @@ app.post('/events', function (req, res) {
   var currentTime = +new Date();
   var limit = req.body.limit || 10;
   var offset = req.body.offset || 0;
-  var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60 * 24));
+  // Refresh events after 1 hour.
+  var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60));
   var paginatedListOfEvents = [];
 
   if (isSyncThresholdCrossed) {
@@ -80,7 +81,7 @@ app.post('/events', function (req, res) {
   }
 
   if (req.body.url) {
-    if(req.body.refreshData){
+    if (req.body.refreshData) {
       request(req.body.url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
           var data = ical2json.convert(body);
@@ -115,7 +116,7 @@ app.post('/events', function (req, res) {
         } else
           res.send({'statusCode': 500, 'events': null});
       });
-    }else{
+    } else {
       if (EVENTS_DATA[req.body.url] && !isSyncThresholdCrossed) {
         returnEventIndexFromCurrentDate(EVENTS_DATA[req.body.url], req.body.date, function (index) {
           if (index != -1) {
@@ -180,7 +181,8 @@ app.post('/events', function (req, res) {
 app.post('/event', function (req, res) {
   var currentTime = +new Date();
   var index = req.body.index || 0;
-  var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60 * 24));
+  // Refresh events after 1 hour.
+  var isSyncThresholdCrossed = ((currentTime - Last_EVENT_SYNC_TIME) >= (1000 * 60 * 60));
 
   if (isSyncThresholdCrossed) {
     Last_EVENT_SYNC_TIME = currentTime;
