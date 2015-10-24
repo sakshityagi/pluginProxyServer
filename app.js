@@ -80,25 +80,7 @@ app.post('/events', function (req, res) {
   }
 
   if (req.body.url) {
-    if (EVENTS_DATA[req.body.url] && !isSyncThresholdCrossed) {
-      returnEventIndexFromCurrentDate(EVENTS_DATA[req.body.url], req.body.date, function (index) {
-        if (index != -1) {
-          paginatedListOfEvents = EVENTS_DATA[req.body.url].slice(offset + index, (offset + index + limit));
-          res.send({
-            'statusCode': 200,
-            'events': paginatedListOfEvents,
-            'totalEvents': EVENTS_DATA[req.body.url].length - index
-          });
-        } else {
-          res.send({
-            'statusCode': 404,
-            'events': null,
-            'totalEvents': 0
-          });
-        }
-      });
-    }
-    else {
+    if(req.body.refreshData){
       request(req.body.url, function (error, response, body) {
         if (!error && response.statusCode == 200) {
           var data = ical2json.convert(body);
@@ -133,6 +115,61 @@ app.post('/events', function (req, res) {
         } else
           res.send({'statusCode': 500, 'events': null});
       });
+    }else{
+      if (EVENTS_DATA[req.body.url] && !isSyncThresholdCrossed) {
+        returnEventIndexFromCurrentDate(EVENTS_DATA[req.body.url], req.body.date, function (index) {
+          if (index != -1) {
+            paginatedListOfEvents = EVENTS_DATA[req.body.url].slice(offset + index, (offset + index + limit));
+            res.send({
+              'statusCode': 200,
+              'events': paginatedListOfEvents,
+              'totalEvents': EVENTS_DATA[req.body.url].length - index
+            });
+          } else {
+            res.send({
+              'statusCode': 404,
+              'events': null,
+              'totalEvents': 0
+            });
+          }
+        });
+      }
+      else {
+        request(req.body.url, function (error, response, body) {
+          if (!error && response.statusCode == 200) {
+            var data = ical2json.convert(body);
+            if (data && data.VEVENT && data.VEVENT.length) {
+              var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
+              processData(mergedEvents, function (events) {
+                mergedEvents = events;
+                mergedEvents = mergedEvents.sort(function (a, b) {
+                  return a.startDate - b.startDate;
+                });
+                EVENTS_DATA[req.body.url] = mergedEvents;
+                returnEventIndexFromCurrentDate(mergedEvents, req.body.date, function (index) {
+                  if (index != -1) {
+                    paginatedListOfEvents = mergedEvents.slice(offset + index, (offset + index + limit));
+                    res.send({
+                      'statusCode': 200,
+                      'events': paginatedListOfEvents,
+                      'totalEvents': mergedEvents.length - index
+                    });
+                  } else {
+                    res.send({
+                      'statusCode': 404,
+                      'events': null,
+                      'totalEvents': 0
+                    });
+                  }
+                });
+              });
+            }
+            else
+              res.send({'statusCode': 404, 'events': null});
+          } else
+            res.send({'statusCode': 500, 'events': null});
+        });
+      }
     }
   } else
     res.send({'statusCode': 404, 'events': null});
