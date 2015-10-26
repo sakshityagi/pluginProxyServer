@@ -139,7 +139,9 @@ app.post('/events', function (req, res) {
         request(req.body.url, function (error, response, body) {
           if (!error && response.statusCode == 200) {
             var data = ical2json.convert(body);
-            if (data && data.VEVENT && data.VEVENT.length) {
+            if (data && (data.VEVENT || data.VCALENDAR)) {
+              if (!data.VEVENT)
+                data.VEVENT = [];
               var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
               processData(mergedEvents, function (events) {
                 mergedEvents = events;
