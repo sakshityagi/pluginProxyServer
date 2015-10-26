@@ -86,9 +86,9 @@ app.post('/events', function (req, res) {
         if (!error && response.statusCode == 200) {
           var data = ical2json.convert(body);
           if (data && (data.VEVENT || data.VCALENDAR)) {
-            if (!data.VEVENT)
+            if (!data.VEVENT.length)
               data.VEVENT = [];
-            if (!data.VCALENDAR)
+            if (!data.VCALENDAR.length)
               data.VCALENDAR = [{
                 VEVENT : []
               }];
@@ -146,9 +146,9 @@ app.post('/events', function (req, res) {
           if (!error && response.statusCode == 200) {
             var data = ical2json.convert(body);
             if (data && (data.VEVENT || data.VCALENDAR)) {
-              if (!data.VEVENT)
+              if (!data.VEVENT.length)
                 data.VEVENT = [];
-              if (!data.VCALENDAR)
+              if (!data.VCALENDAR.length)
                 data.VCALENDAR = [{
                   VEVENT : []
                 }];
