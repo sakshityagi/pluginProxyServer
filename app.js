@@ -88,7 +88,7 @@ app.post('/events', function (req, res) {
           if (data && (data.VEVENT || data.VCALENDAR)) {
             if (!(data.VEVENT && data.VEVENT.length))
               data.VEVENT = [];
-            if (!(data.VCALENDAR && data.VCALENDAR.length))
+            if (!(data.VCALENDAR && data.VCALENDAR.length && data.VCALENDAR[0].VEVENT))
               data.VCALENDAR = [{
                 VEVENT : []
               }];
@@ -148,7 +148,7 @@ app.post('/events', function (req, res) {
             if (data && (data.VEVENT || data.VCALENDAR)) {
               if (!(data.VEVENT && data.VEVENT.length))
                 data.VEVENT = [];
-              if (!(data.VCALENDAR && data.VCALENDAR.length))
+              if (!(data.VCALENDAR && data.VCALENDAR.length && data.VCALENDAR[0].VEVENT))
                 data.VCALENDAR = [{
                   VEVENT : []
                 }];
