@@ -89,7 +89,9 @@ app.post('/events', function (req, res) {
             if (!data.VEVENT)
               data.VEVENT = [];
             if (!data.VCALENDAR)
-              data.VCALENDAR = [];
+              data.VCALENDAR = [{
+                VEVENT : []
+              }];
             var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
             processData(mergedEvents, function (events) {
               mergedEvents = events;
@@ -147,7 +149,9 @@ app.post('/events', function (req, res) {
               if (!data.VEVENT)
                 data.VEVENT = [];
               if (!data.VCALENDAR)
-                data.VCALENDAR = [];
+                data.VCALENDAR = [{
+                  VEVENT : []
+                }];
               var mergedEvents = data.VCALENDAR[0].VEVENT.concat(data.VEVENT);
               processData(mergedEvents, function (events) {
                 mergedEvents = events;
