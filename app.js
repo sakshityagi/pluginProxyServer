@@ -56,9 +56,9 @@ app.post('/validate', function (req, res) {
       if (!error && response.statusCode == 200) {
         var data = ical2json.convert(body);
         if (data && data.VEVENT && data.VEVENT.length)
-          res.send({'statusCode': 200});
+          res.send({'statusCode': 200, events: true});
         else
-          res.send({'statusCode': 404});
+          res.send({'statusCode': 200, events: false});
       } else
         res.send({'statusCode': 500});
     });
